@@ -5,7 +5,8 @@ import java.time.LocalTime;
 public class AppointmentFactory {
     public static Appointment create(String appointeeId, String requesterId,
                                      LocalTime startTime, LocalTime endTime, String place) {
-        return new Appointment(appointeeId,requesterId, startTime, endTime, place);
+        // TODO IDを載せたい場合は、引数のrequesterIdをセット
+        return new Appointment(appointeeId,"匿名", startTime, endTime, place);
     }
 
     public static Appointment sample() {
