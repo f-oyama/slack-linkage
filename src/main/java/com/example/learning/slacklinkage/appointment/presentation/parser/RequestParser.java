@@ -65,13 +65,15 @@ public class RequestParser {
      * 必要なパラメータが揃っているかを確認する
      */
     private static boolean checkParamIsValid(Map<String,String> paramMap) throws IllegalArgumentException {
-        final String formatErrorMessage = "フォーマットが不正です [予約:予約対象(0),開始時刻(1),終了時刻(2),場所(3)] のフォーマットで記入してください";
+        final String formatError = "フォーマットが不正です [予約:予約対象(0),開始時刻(1),終了時刻(2),場所(3)] のフォーマットで記入してください";
+        final String parseTimeError = "開始時刻(1), 終了時刻(2) どちらかの時刻フォーマットが不正です。 HH:mm 形式で入力してください。";
+        final String equalTimeError = "開始時刻(1), 終了時刻(2) が同じ場合は予約できません。";
 
         Optional<String> tokenOpt = Optional.of(paramMap.get(TOKEN_NAME_KEY));
         Optional<String> userNameOpt = Optional.of(paramMap.get(USER_NAME_KEY));
         Optional<String> textOpt = Optional.of(paramMap.get(TEXT_KEY));
         if (tokenOpt.isEmpty() || userNameOpt.isEmpty() || textOpt.isEmpty()) {
-            throw new IllegalArgumentException(formatErrorMessage);
+            throw new IllegalArgumentException(formatError);
         }
 
         // TODO textの項目が右記の順番通りでなければいけない問題 : text=予約対象の人(0),18:00(1),20:00(2),place(3)
@@ -80,16 +82,23 @@ public class RequestParser {
         // 値のチェック
         if (appointInfo.length < MAX_ELEMENTS) {
             // 要素が足りないケース
-            throw new IllegalArgumentException(formatErrorMessage);
-        } else {
-            // 値が不正なケース
-            try {
-                parseToTime(appointInfo[START_TIME_INDEX]);
-                parseToTime(appointInfo[END_TIME_INDEX]);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new IllegalArgumentException("開始時刻(1), 終了時刻(2)のどちらかが不正です。確認してください。");
-            }
+            throw new IllegalArgumentException(formatError);
+        }
+
+        // 時刻のチェック
+        LocalTime startTime, endTime;
+        // 不正な値かをチェック
+        try {
+            startTime = parseToTime(appointInfo[START_TIME_INDEX]);
+            endTime = parseToTime(appointInfo[END_TIME_INDEX]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException(parseTimeError);
+        }
+        // 時刻に幅があるかをチェック
+        if (startTime.equals(endTime)) {
+            // 幅がなければエラー
+            throw new IllegalArgumentException(equalTimeError);
         }
 
         return true;
