@@ -8,12 +8,11 @@ import lombok.Data;
  */
 @Data
 public class SlackResponseJson {
-    @JsonProperty(value = "user_name")
-    public String userName; // メンション先
+    public String username; // メンション先
     public String text; // メッセージ
 
-    public SlackResponseJson(String userName, String text) {
-        this.userName = userName;
+    public SlackResponseJson(String username, String text) {
+        this.username = username;
         this.text = text;
     }
 }

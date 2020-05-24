@@ -6,6 +6,7 @@ import com.example.learning.slacklinkage.appointment.domain.model.Appointment;
 import com.example.learning.slacklinkage.appointment.domain.service.CheckService;
 import com.example.learning.slacklinkage.appointment.infrastructure.repository.AppointmentRepository;
 import com.example.learning.slacklinkage.appointment.presentation.model.AppointmentRequest;
+import com.example.learning.slacklinkage.appointment.presentation.model.json.SlackResponseJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,16 +29,16 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public boolean save(AppointmentRequest payload) {
+    public SlackResponseJson save(AppointmentRequest payload) {
         Appointment appointment = parseService.parseToDomainModel(payload);
 
         if (checkService.checkConflict(appointment)) {
             logger.error("This appointment is conflicted");
-            return false; // TODO 例外を投げてControllerでハンドリングしたい
+            return parseService.parseToSlackResponse(appointment, false);
         }
 
         appointmentRepository.save(appointment);
-        return true;
+        return parseService.parseToSlackResponse(appointment, true);
     }
 
     @Override

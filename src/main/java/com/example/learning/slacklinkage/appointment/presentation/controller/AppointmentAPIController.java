@@ -2,6 +2,7 @@ package com.example.learning.slacklinkage.appointment.presentation.controller;
 
 import com.example.learning.slacklinkage.appointment.domain.model.Appointment;
 import com.example.learning.slacklinkage.appointment.presentation.model.AppointmentRequest;
+import com.example.learning.slacklinkage.appointment.presentation.model.json.SlackResponseJson;
 import com.example.learning.slacklinkage.appointment.presentation.parser.RequestParser;
 import com.example.learning.slacklinkage.appointment.application.service.AppointmentService;
 import org.slf4j.Logger;
@@ -31,15 +32,12 @@ public class AppointmentAPIController {
      * 予約API
      */
     @PostMapping("/appoint")
-    public String appoint(@RequestBody String body) {// @RequestBodyをつけると、RequestBodyをStringとして受けられる
+    public SlackResponseJson appoint(@RequestBody String body) {// @RequestBodyをつけると、RequestBodyをStringとして受けられる
         logger.info("appoint received data = " + body);
 
         AppointmentRequest request = RequestParser.parsePayload(body);
-        boolean result = appointmentService.save(request);
-        if (!result) {
-            return "Failed to appoint";
-        }
-        return "Success to appoint = " + request.toString();
+        SlackResponseJson response = appointmentService.save(request);
+        return response;
     }
 
     /*
