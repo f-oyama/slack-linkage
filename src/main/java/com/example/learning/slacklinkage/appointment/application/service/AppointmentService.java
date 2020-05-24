@@ -6,7 +6,7 @@ import com.example.learning.slacklinkage.appointment.presentation.model.Appointm
 import java.util.List;
 
 public interface AppointmentService {
-    public boolean save(AppointmentRequest payload);
-    public List<Appointment> selectAll();
-    public boolean deleteAll();
+    boolean save(AppointmentRequest payload);
+    List<Appointment> selectAll();
+    boolean deleteAll();
 }
