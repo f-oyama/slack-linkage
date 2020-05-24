@@ -1,6 +1,5 @@
 package com.example.learning.slacklinkage.appointment.presentation.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalTime;
@@ -29,8 +28,14 @@ public class AppointmentRequest {
         this.userName = userName;
         this.text = text;
         this.appointeeId = appointeeId;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        if (startTime.isBefore(endTime)) {
+            this.startTime = startTime;
+            this.endTime = endTime;
+        } else {
+            // 時間の前後関係が逆転してる場合は訂正
+            this.startTime = endTime;
+            this.endTime = startTime;
+        }
         this.place = place;
     }
 

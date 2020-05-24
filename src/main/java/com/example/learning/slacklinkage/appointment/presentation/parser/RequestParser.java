@@ -22,46 +22,77 @@ public class RequestParser {
     // 要素数の最大数
     private static final int MAX_ELEMENTS = PLACE_INDEX + 1;
 
-    public static AppointmentRequest parsePayload(String request) {
+    public static AppointmentRequest parsePayload(String requestParam) throws IllegalArgumentException {
          // decode 処理
-        String decodedRequest;
+        String decodedRequestParam;
         try {
-            decodedRequest = decode(request);
+            decodedRequestParam = decode(requestParam);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Failed to decode");
         }
 
         // parse 処理
-        String[] params = decodedRequest.split("&");
+        Map<String, String> paramMap = parseParamToMap(decodedRequestParam);
+
+        // 必須要素が満たされているかチェック
+       checkParamIsValid(paramMap);
+
+        // 本文を分割して、予約情報へ変換する
+        String[] appointInfo = paramMap.get(TEXT_KEY).split(",");
+
+        // TODO ParserがFactory扱いになっているけどFactoryにした方が良いのだろうか・・・
+        //  でも、parseしてるしな、という悩み
+        return new AppointmentRequest(paramMap.get(TOKEN_NAME_KEY), paramMap.get(USER_NAME_KEY), paramMap.get(TEXT_KEY),
+                appointInfo[APPOINTEE_INDEX], parseToTime(appointInfo[START_TIME_INDEX]),
+                parseToTime(appointInfo[END_TIME_INDEX]), appointInfo[PLACE_INDEX]);
+    }
+
+    private static Map<String, String> parseParamToMap (String requestParam) {
+        String[] params = requestParam.split("&");
 
         // TODO スマートにMapへ変換したい
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> paramMap = new HashMap<>();
         Arrays.stream(params).forEach(param -> {
             String[] keyValue = param.split("=");
-            map.put(Objects.requireNonNull(keyValue[0], ""),
+            paramMap.put(Objects.requireNonNull(keyValue[0], ""),
                     Objects.requireNonNull(keyValue[1], ""));
         });
 
-        // 必須要素のチェック
-        Optional<String> tokenOpt = Optional.of(map.get(TOKEN_NAME_KEY));
-        Optional<String> userNameOpt = Optional.of(map.get(USER_NAME_KEY));
-        Optional<String> textOpt = Optional.of(map.get(TEXT_KEY));
+        return paramMap;
+    }
+
+    /*
+     * 必要なパラメータが揃っているかを確認する
+     */
+    private static boolean checkParamIsValid(Map<String,String> paramMap) throws IllegalArgumentException {
+        final String formatErrorMessage = "フォーマットが不正です [予約:予約対象(0),開始時刻(1),終了時刻(2),場所(3)] のフォーマットで記入してください";
+
+        Optional<String> tokenOpt = Optional.of(paramMap.get(TOKEN_NAME_KEY));
+        Optional<String> userNameOpt = Optional.of(paramMap.get(USER_NAME_KEY));
+        Optional<String> textOpt = Optional.of(paramMap.get(TEXT_KEY));
         if (tokenOpt.isEmpty() || userNameOpt.isEmpty() || textOpt.isEmpty()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(formatErrorMessage);
         }
 
         // TODO textの項目が右記の順番通りでなければいけない問題 : text=予約対象の人(0),18:00(1),20:00(2),place(3)
         String[] appointInfo = textOpt.get().split(",");
+
+        // 値のチェック
         if (appointInfo.length < MAX_ELEMENTS) {
-            // TODO 要素が足りない時は例外
-            throw new IllegalArgumentException();
+            // 要素が足りないケース
+            throw new IllegalArgumentException(formatErrorMessage);
+        } else {
+            // 値が不正なケース
+            try {
+                parseToTime(appointInfo[START_TIME_INDEX]);
+                parseToTime(appointInfo[END_TIME_INDEX]);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new IllegalArgumentException("開始時刻(1), 終了時刻(2)のどちらかが不正です。確認してください。");
+            }
         }
 
-        // TODO ParserがFactory扱いになっているけどFactoryにした方が良いのだろうか・・・
-        //  でも、parseしてるしな、という悩み
-        return new AppointmentRequest(tokenOpt.get(), userNameOpt.get(), textOpt.get(),
-                appointInfo[APPOINTEE_INDEX], parseToTime(appointInfo[START_TIME_INDEX]),
-                parseToTime(appointInfo[END_TIME_INDEX]), appointInfo[PLACE_INDEX]);
+        return true;
     }
 
     private static String decode(String requestBody) throws UnsupportedEncodingException {

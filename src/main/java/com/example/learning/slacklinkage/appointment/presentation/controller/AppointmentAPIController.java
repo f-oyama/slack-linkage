@@ -35,7 +35,14 @@ public class AppointmentAPIController {
     public SlackResponseJson appoint(@RequestBody String body) {// @RequestBodyをつけると、RequestBodyをStringとして受けられる
         logger.info("appoint received data = " + body);
 
-        AppointmentRequest request = RequestParser.parsePayload(body);
+        AppointmentRequest request;
+        try {
+            request = RequestParser.parsePayload(body);
+        } catch (IllegalArgumentException e) {
+            // TODO SlackResponseJson 作成をこの層でやる、SlackResponseJsonは外部とのやりとりなので、この層だけ知っていれば良い
+            return new SlackResponseJson("@here", e.getMessage());
+        }
+
         SlackResponseJson response = appointmentService.save(request);
         return response;
     }

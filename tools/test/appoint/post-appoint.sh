@@ -12,4 +12,5 @@ curl -X GET "localhost:8080/appoint/delete/all"
 curl -X POST "localhost:8080/appoint" -H "Content-type: application/text" --data-binary @data/slack-appoint-sample.txt
 curl -X POST "localhost:8080/appoint" -H "Content-type: application/text" --data-binary @data/slack-appoint-sample2.txt
 curl -X POST "localhost:8080/appoint" -H "Content-type: application/text" --data-binary @data/slack-appoint-sample3.txt
+curl -X POST "localhost:8080/appoint" -H "Content-type: application/text" --data-binary @data/slack-appoint-sample4.txt
 

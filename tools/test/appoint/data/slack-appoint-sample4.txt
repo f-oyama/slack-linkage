@@ -1,0 +1,1 @@
+token=dummy&user_name=sample3&text=予約対象の人,12:00,10:00,somewhere
