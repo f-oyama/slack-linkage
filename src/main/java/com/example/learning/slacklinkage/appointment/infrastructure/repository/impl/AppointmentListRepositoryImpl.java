@@ -5,8 +5,7 @@ import com.example.learning.slacklinkage.appointment.infrastructure.repository.A
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /*
@@ -20,6 +19,7 @@ public class AppointmentListRepositoryImpl implements AppointmentRepository {
     @Override
     public Appointment save(Appointment appointment) {
         appointmentList.add(appointment);
+        appointmentList.sort(Comparator.comparing(Appointment::getStartTime)); // Comparator.comparingで引数の値照準へでソートできる
         return appointment;
     }
 
